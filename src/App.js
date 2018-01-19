@@ -1,31 +1,64 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import "./App.css";
+
+const list = [
+  {
+    by: "kalabhairava",
+    descendants: 171,
+    id: 9833,
+    kids: [],
+    score: 1000,
+    time: 1175714200,
+    title: "My Hacker News Clone build using plain React",
+    type: "story",
+    url: "http://www.getdropbox.com/u/2/screencast.html"
+  },
+
+  {
+    by: "dhouston",
+    descendants: 71,
+    id: 8863,
+    kids: [],
+    score: 109,
+    time: 1175714200,
+    title: "Long live React",
+    type: "story",
+    url: "http://www.getdropbox.com/u/2/screencast.html"
+  }
+];
 
 class App extends Component {
-  render() {
-    // To use vars inside JSX, wrap them in {}
-    const welcomeMessage = "Welcome to the Road to Learn React";
+  constructor(props) {
+    super(props);
 
-    // Objects cannot be child elements in JSX
-    const user = {
-      name: 'Batman',
-      vehicle: 'Batcar'
+    this.state = {
+      list
     };
 
-    // Arrays can be rendered using JSX
-    const superheros = ['Batman', 'Superman', 'Arrow'];
+    this.onDismiss = this.onDismiss.bind(this);
+  }
 
-    // render must return something. If you want to render empty element, use `return null`
+  render() {
     return (
-      // No JS style comments inside JSX
-      // To use comments inside JSX => http://wesbos.com/react-jsx-comments/
       <div className="App">
-        <h2> {welcomeMessage} </h2>
-        <h3> I am {user.name}, and I drive {user.vehicle}</h3>
-        <p> Who is your hero?! {superheros} </p>
+        <h1> Hacker News </h1>
+        {this.state.list.map(item => (
+          <div key={item.id}>
+            <p>{item.title}</p>
+            <button onClick={() => this.onDismiss(item.id)} type="button">
+              Dismiss
+            </button>
+          </div>
+        ))}
       </div>
     );
   }
+
+  onDismiss(id) {
+    console.log("ID", id);
+    const updatedList = this.state.list.filter(item => item.id !== id);
+    this.setState({ list: updatedList });
+  }
 }
+
 export default App;
