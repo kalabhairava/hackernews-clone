@@ -32,33 +32,58 @@ class App extends Component {
     super(props);
 
     this.state = {
-      list
+      list,
+      searchTerm: ""
     };
 
     this.onDismiss = this.onDismiss.bind(this);
+    this.onSearchTerm = this.onSearchTerm.bind(this);
   }
 
   render() {
     return (
       <div className="App">
         <h1> Hacker News </h1>
-        {this.state.list.map(item => (
-          <div key={item.id}>
-            <p>{item.title}</p>
-            <button onClick={() => this.onDismiss(item.id)} type="button">
-              Dismiss
-            </button>
-          </div>
-        ))}
+        {this.state.list
+          .filter(filterSearchResults(this.state.searchTerm))
+          .map(item => {
+            const handleDismiss = () => this.onDismiss(item.id);
+            return (
+              <div key={item.id}>
+                <p>{item.title}</p>
+                <button onClick={handleDismiss} type="button">
+                  Dismiss
+                </button>
+              </div>
+            );
+          })}
+        <button onClick={() => this.onReset()} type="button">
+          Reset
+        </button>
+        <form>
+          <input type="text" onChange={this.onSearchTerm} />
+        </form>
       </div>
     );
   }
 
-  onDismiss(id) {
-    console.log("ID", id);
+  onDismiss(id, event) {
+    console.log("ID", id, event);
     const updatedList = this.state.list.filter(item => item.id !== id);
     this.setState({ list: updatedList });
   }
+
+  onReset() {
+    this.setState({ list });
+  }
+
+  onSearchTerm(event) {
+    this.setState({ searchTerm: event.target.value });
+  }
+}
+
+function filterSearchResults(searchTerm) {
+  return item => item.title.toLowerCase().includes(searchTerm.toLowerCase());
 }
 
 export default App;
