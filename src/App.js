@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import "./App.css";
 
+// Mock data
 const list = [
   {
     by: "kalabhairava",
@@ -27,6 +28,9 @@ const list = [
   }
 ];
 
+// --------------------------------------------------------------
+// Stateful Components
+// --------------------------------------------------------------
 class App extends Component {
   constructor(props) {
     super(props);
@@ -38,31 +42,20 @@ class App extends Component {
 
     this.onDismiss = this.onDismiss.bind(this);
     this.onSearchTerm = this.onSearchTerm.bind(this);
+    this.onReset = this.onReset.bind(this);
   }
 
   render() {
     return (
       <div className="App">
         <h1> Hacker News </h1>
-        {this.state.list
-          .filter(filterSearchResults(this.state.searchTerm))
-          .map(item => {
-            const handleDismiss = () => this.onDismiss(item.id);
-            return (
-              <div key={item.id}>
-                <p>{item.title}</p>
-                <button onClick={handleDismiss} type="button">
-                  Dismiss
-                </button>
-              </div>
-            );
-          })}
-        <button onClick={() => this.onReset()} type="button">
-          Reset
-        </button>
-        <form>
-          <input type="text" onChange={this.onSearchTerm} />
-        </form>
+        <Search onSearchTerm={this.onSearchTerm}>Search</Search>
+        <Posts
+          list={this.state.list}
+          searchTerm={this.state.searchTerm}
+          onDismiss={this.onDismiss}
+        />
+        <Button onClick={this.onReset}>Reset</Button>
       </div>
     );
   }
@@ -82,8 +75,48 @@ class App extends Component {
   }
 }
 
+// --------------------------------------------------------------
+// Functional Stateless Components
+// --------------------------------------------------------------
+function Search(props) {
+  const { children, onSearchTerm } = props;
+  return (
+    <form>
+      <label for="search">{children}</label>
+      <input name="search" type="text" onChange={onSearchTerm} />
+    </form>
+  );
+}
+
+function Posts(props) {
+  const { list, searchTerm, onDismiss } = props;
+
+  return (
+    <div>
+      {list.filter(filterSearchResults(searchTerm)).map(item => {
+        return (
+          <div key={item.id}>
+            <p>{item.title}</p>
+            <Button onClick={() => onDismiss(item.id)}>Dismiss</Button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function Button(props) {
+  const { children, onClick } = props;
+  return (
+    <button onClick={onClick} type="button">
+      {children}
+    </button>
+  );
+}
+
+// private functions
+
 function filterSearchResults(searchTerm) {
   return item => item.title.toLowerCase().includes(searchTerm.toLowerCase());
 }
-
 export default App;
