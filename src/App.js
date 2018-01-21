@@ -1,9 +1,8 @@
 import React, { Component } from "react";
 import "./App.css";
 
-// URL config
+// Hackernews API endpoint
 const URL = "https:/hn.algolia.com/api/v1/search?query=";
-const DEFAULT_QUERY = "redux";
 
 // --------------------------------------------------------------
 // Stateful Components
@@ -15,33 +14,48 @@ class App extends Component {
 
     this.state = {
       result: null,
-      searchTerm: DEFAULT_QUERY
+      searchTerm: " ",
+      filter: ""
     };
 
     this.onDismiss = this.onDismiss.bind(this);
     this.onSearchTerm = this.onSearchTerm.bind(this);
+    this.onFilterTerm = this.onFilterTerm.bind(this);
     this.setSearchTopStories = this.setSearchTopStories.bind(this);
     this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this);
+    this.onSearchSubmit = this.onSearchSubmit.bind(this);
   }
 
   render() {
-    const { result, searchTerm } = this.state;
+    const { result, searchTerm, onSearchSubmit, filter } = this.state;
 
     return (
       <div>
         <div className="header">
           <span className="page-title"> Hacker News </span>
+          <form onSubmit={event => this.onSearchSubmit(event)}>
+            <input
+              name="search"
+              type="text"
+              value={searchTerm}
+              onChange={this.onSearchTerm}
+              placeholder="Search"
+            />
+          </form>
+        </div>
+        <div className="filter-box">
           <input
             name="search"
             type="text"
-            value={searchTerm}
-            onChange={this.onSearchTerm}
+            value={filter}
+            onChange={this.onFilterTerm}
+            placeholder="Filter Results"
           />
         </div>
         {result && (
           <Posts
             list={result.hits}
-            searchTerm={searchTerm}
+            filter={filter}
             onDismiss={this.onDismiss}
           />
         )}
@@ -51,11 +65,13 @@ class App extends Component {
 
   componentDidMount() {
     this.fetchSearchTopStories(this.state.searchTerm);
+    // searchTerm is set to space (" ") to make the initial call to HN API work.
+    // set it to null after first render() so that placeholder is visible
+    this.setState({ searchTerm: "" });
   }
 
   // class methods
   onDismiss(id, event) {
-    console.log("ID", id, event);
     const updatedList = this.state.result.hits.filter(
       item => item.objectID !== id
     );
@@ -63,11 +79,20 @@ class App extends Component {
     this.setState({
       result: { ...this.state.result, ...{ hits: updatedList } }
     });
-    console.log("Test", { ...this.state.result, ...{ hits: updatedList } });
+  }
+
+  onSearchSubmit(event) {
+    this.fetchSearchTopStories(this.state.searchTerm);
+    event.preventDefault();
+    return false;
   }
 
   onSearchTerm(event) {
     this.setState({ searchTerm: event.target.value });
+  }
+
+  onFilterTerm(event) {
+    this.setState({ filter: event.target.value });
   }
 
   setSearchTopStories(result) {
@@ -75,15 +100,17 @@ class App extends Component {
   }
 
   fetchSearchTopStories(searchTerm) {
-    fetch(`${URL}${searchTerm}`)
-      .then(response => response.json())
-      .then(result => {
-        console.log("fetch successful, about to render data to the screen");
-        this.setSearchTopStories(result);
-      })
-      .catch(e => {
-        console.log(`Error fetching data from ${URL}${searchTerm} =>`, e);
-      });
+    if (searchTerm) {
+      fetch(`${URL}${searchTerm}`)
+        .then(response => response.json())
+        .then(result => {
+          console.log("fetch successful, about to render data to the screen");
+          this.setSearchTopStories(result);
+        })
+        .catch(e => {
+          console.log(`Error fetching data from ${URL}${searchTerm} =>`, e);
+        });
+    }
   }
 }
 
@@ -101,11 +128,11 @@ function Search(props) {
 }
 
 function Posts(props) {
-  const { list, searchTerm, onDismiss } = props;
+  const { list, filter, onDismiss } = props;
 
   return (
     <div className="table">
-      {list.filter(filterSearchResults(searchTerm)).map(item => {
+      {list.filter(filterSearchResults(filter)).map(item => {
         return (
           <div key={item.objectID} className="table-row">
             <Post item={item} onDismiss={onDismiss} />
@@ -188,16 +215,13 @@ function Button(props) {
 // --------------------------------------------------------------
 // Private Functions
 // --------------------------------------------------------------
-function filterSearchResults(searchTerm) {
-  return item => item.title.toLowerCase().includes(searchTerm.toLowerCase());
+function filterSearchResults(filter) {
+  if (filter) {
+    return item =>
+      item.title && item.title.toLowerCase().includes(filter.toLowerCase());
+  } else {
+    return item => !!item.title;
+  }
 }
 
 export default App;
-
-// <a bo-href="&quot;https://news.ycombinator.com/item?id=&quot; + hit.objectID" title="See original post on HN" href="https://news.ycombinator.com/item?id=11505484">
-// <span class="date ng-binding">125 points</span>
-// </a>
-
-// <a bo-href="&quot;https://news.ycombinator.com/user?id=&quot; + hit.author" title="See acemarke&nbsp;profile" href="https://news.ycombinator.com/user?id=acemarke">
-// <span bo-html="hit._highlightResult.author.value" class="author">acemarke</span>
-// </a>
