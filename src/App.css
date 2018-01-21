@@ -4,7 +4,7 @@
   grid-column-gap: 10px;
   background: #000000;
   color: gray;
-  height: 60px;
+  height: 70px;
   margin: 0;
   padding: 5px;
 }
@@ -12,11 +12,12 @@
 .header > form {
   grid-row: 1;
   grid-column: 3;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .header input {
   width: 90%;
+  height: 24px;
 }
 
 .page-title {
