@@ -1,77 +1,89 @@
 import React, { Component } from "react";
 import "./App.css";
 
-// Mock data
-const list = [
-  {
-    by: "kalabhairava",
-    descendants: 171,
-    id: 9833,
-    kids: [],
-    score: 1000,
-    time: 1175714200,
-    title: "My Hacker News Clone build using plain React",
-    type: "story",
-    url: "http://www.getdropbox.com/u/2/screencast.html"
-  },
-
-  {
-    by: "dhouston",
-    descendants: 71,
-    id: 8863,
-    kids: [],
-    score: 109,
-    time: 1175714200,
-    title: "Long live React",
-    type: "story",
-    url: "http://www.getdropbox.com/u/2/screencast.html"
-  }
-];
+// URL config
+const URL = "https:/hn.algolia.com/api/v1/search?query=";
+const DEFAULT_QUERY = "redux";
 
 // --------------------------------------------------------------
 // Stateful Components
 // --------------------------------------------------------------
 class App extends Component {
+  // lifecycle hooks
   constructor(props) {
     super(props);
 
     this.state = {
-      list,
-      searchTerm: ""
+      result: null,
+      searchTerm: DEFAULT_QUERY
     };
 
     this.onDismiss = this.onDismiss.bind(this);
     this.onSearchTerm = this.onSearchTerm.bind(this);
-    this.onReset = this.onReset.bind(this);
+    this.setSearchTopStories = this.setSearchTopStories.bind(this);
+    this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this);
   }
 
   render() {
+    const { result, searchTerm } = this.state;
+
     return (
-      <div className="App">
-        <h1> Hacker News </h1>
-        <Search onSearchTerm={this.onSearchTerm}>Search</Search>
-        <Posts
-          list={this.state.list}
-          searchTerm={this.state.searchTerm}
-          onDismiss={this.onDismiss}
-        />
-        <Button onClick={this.onReset}>Reset</Button>
+      <div>
+        <div className="header">
+          <span className="page-title"> Hacker News </span>
+          <input
+            name="search"
+            type="text"
+            value={searchTerm}
+            onChange={this.onSearchTerm}
+          />
+        </div>
+        {result && (
+          <Posts
+            list={result.hits}
+            searchTerm={searchTerm}
+            onDismiss={this.onDismiss}
+          />
+        )}
       </div>
     );
   }
 
-  onDismiss(id, event) {
-    console.log("ID", id, event);
-    const updatedList = this.state.list.filter(item => item.id !== id);
-    this.setState({ list: updatedList });
+  componentDidMount() {
+    this.fetchSearchTopStories(this.state.searchTerm);
   }
 
-  onReset() {
-    this.setState({ list });
+  // class methods
+  onDismiss(id, event) {
+    console.log("ID", id, event);
+    const updatedList = this.state.result.hits.filter(
+      item => item.objectID !== id
+    );
+
+    this.setState({
+      result: { ...this.state.result, ...{ hits: updatedList } }
+    });
+    console.log("Test", { ...this.state.result, ...{ hits: updatedList } });
   }
 
   onSearchTerm(event) {
     this.setState({ searchTerm: event.target.value });
+  }
+
+  setSearchTopStories(result) {
+    this.setState({ result });
+  }
+
+  fetchSearchTopStories(searchTerm) {
+    fetch(`${URL}${searchTerm}`)
+      .then(response => response.json())
+      .then(result => {
+        console.log("fetch successful, about to render data to the screen");
+        this.setSearchTopStories(result);
+      })
+      .catch(e => {
+        console.log(`Error fetching data from ${URL}${searchTerm} =>`, e);
+      });
   }
 }
 
@@ -79,11 +91,11 @@ class App extends Component {
 // Functional Stateless Components
 // --------------------------------------------------------------
 function Search(props) {
-  const { children, onSearchTerm } = props;
+  const { children, value, onSearchTerm } = props;
   return (
     <form>
-      <label for="search">{children}</label>
-      <input name="search" type="text" onChange={onSearchTerm} />
+      <label htmlFor="search">{children}</label>
+      <input name="search" type="text" value={value} onChange={onSearchTerm} />
     </form>
   );
 }
@@ -92,12 +104,11 @@ function Posts(props) {
   const { list, searchTerm, onDismiss } = props;
 
   return (
-    <div>
+    <div className="table">
       {list.filter(filterSearchResults(searchTerm)).map(item => {
         return (
-          <div key={item.id}>
-            <p>{item.title}</p>
-            <Button onClick={() => onDismiss(item.id)}>Dismiss</Button>
+          <div key={item.objectID} className="table-row">
+            <Post item={item} onDismiss={onDismiss} />
           </div>
         );
       })}
@@ -105,18 +116,88 @@ function Posts(props) {
   );
 }
 
-function Button(props) {
-  const { children, onClick } = props;
+function Post(props) {
+  const { item, onDismiss } = props;
+
   return (
-    <button onClick={onClick} type="button">
+    <div>
+      <div>
+        <a title={`Visit ${item.url}`} href={item.url}>
+          {item.title}
+        </a>
+        <span className="dismiss-btn">
+          <Button
+            onClick={() => onDismiss(item.objectID)}
+            classList="dismiss-btn button-inline"
+          >
+            X
+          </Button>
+        </span>
+      </div>
+      <div>
+        <span>
+          <a
+            title={`See ${item.author} profile on HN`}
+            href={`https://news.ycombinator.com/user?id=${item.author}`}
+            className="sub-link"
+          >
+            {item.author}
+          </a>
+        </span>|
+        <span>
+          <a
+            title="See original post on HN"
+            href={`https://news.ycombinator.com/item?id=${item.objectID}`}
+            className="sub-link"
+          >
+            {item.num_comments} comments
+          </a>
+        </span>|
+        <span>
+          <a
+            title="See original post on HN"
+            href={`https://news.ycombinator.com/item?id=${item.objectID}`}
+            className="sub-link"
+          >
+            {item.points} points
+          </a>
+        </span>|
+        <span>
+          <a
+            title="Visit the original site"
+            href={item.url}
+            className="sub-link"
+          >
+            ({item.url})
+          </a>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function Button(props) {
+  const { children, onClick, style, classList } = props;
+  return (
+    <button onClick={onClick} type="button" style={style} className={classList}>
       {children}
     </button>
   );
 }
 
-// private functions
-
+// --------------------------------------------------------------
+// Private Functions
+// --------------------------------------------------------------
 function filterSearchResults(searchTerm) {
   return item => item.title.toLowerCase().includes(searchTerm.toLowerCase());
 }
+
 export default App;
+
+// <a bo-href="&quot;https://news.ycombinator.com/item?id=&quot; + hit.objectID" title="See original post on HN" href="https://news.ycombinator.com/item?id=11505484">
+// <span class="date ng-binding">125 points</span>
+// </a>
+
+// <a bo-href="&quot;https://news.ycombinator.com/user?id=&quot; + hit.author" title="See acemarke&nbsp;profile" href="https://news.ycombinator.com/user?id=acemarke">
+// <span bo-html="hit._highlightResult.author.value" class="author">acemarke</span>
+// </a>
