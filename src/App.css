@@ -81,3 +81,8 @@ a.sub-link:hover {
 .loader {
   text-align: center;
 }
+
+.error {
+  margin: 12em;
+  text-align: center;
+}

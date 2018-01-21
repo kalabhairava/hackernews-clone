@@ -15,21 +15,30 @@ class App extends Component {
 
     this.state = {
       result: null,
-      searchTerm: " ",
-      filter: "",
-      loading: true
+      searchTerm: undefined,
+      filter: undefined,
+      loading: true,
+      noResults: false,
+      hasError: false
     };
 
     this.onDismiss = this.onDismiss.bind(this);
-    this.onSearchTerm = this.onSearchTerm.bind(this);
-    this.onFilterTerm = this.onFilterTerm.bind(this);
+    this.onSearchTermChange = this.onSearchTermChange.bind(this);
+    this.onFilterTermChange = this.onFilterTermChange.bind(this);
     this.setSearchTopStories = this.setSearchTopStories.bind(this);
     this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
   }
 
   render() {
-    const { result, searchTerm, onSearchSubmit, filter, loading } = this.state;
+    const {
+      result,
+      searchTerm,
+      filter,
+      loading,
+      noResults,
+      hasError
+    } = this.state;
 
     return (
       <div>
@@ -40,25 +49,30 @@ class App extends Component {
               name="search"
               type="text"
               value={searchTerm}
-              onChange={this.onSearchTerm}
+              onChange={this.onSearchTermChange}
               placeholder="Search"
             />
           </form>
         </div>
-        <div className="filter-box">
-          <input
-            name="search"
-            type="text"
-            value={filter}
-            onChange={this.onFilterTerm}
-            placeholder="Filter Results"
-          />
-        </div>
+        {!hasError &&
+          !noResults && (
+            <div className="filter-box">
+              <input
+                name="search"
+                type="text"
+                value={filter}
+                onChange={this.onFilterTermChange}
+                placeholder="Filter Results"
+              />
+            </div>
+          )}
         <Posts
           list={result ? result.hits : []}
           filter={filter}
           onDismiss={this.onDismiss}
           loading={loading}
+          noResults={noResults}
+          hasError={hasError}
         />
       </div>
     );
@@ -66,9 +80,6 @@ class App extends Component {
 
   componentDidMount() {
     this.fetchSearchTopStories(this.state.searchTerm);
-    // searchTerm is set to space (" ") to make the initial call to HN API work.
-    // set it to null after first render() so that placeholder is visible
-    this.setState({ searchTerm: "" });
   }
 
   // class methods
@@ -89,19 +100,24 @@ class App extends Component {
     return false;
   }
 
-  onSearchTerm(event) {
+  onSearchTermChange(event) {
     this.setState({ searchTerm: event.target.value });
   }
 
-  onFilterTerm(event) {
+  onFilterTermChange(event) {
     this.setState({ filter: event.target.value });
   }
 
   setSearchTopStories(result) {
-    this.setState({ result, loading: false });
+    this.setState({
+      result,
+      loading: false,
+      noResults: !result.hits.length,
+      hasError: false
+    });
   }
 
-  fetchSearchTopStories(searchTerm) {
+  fetchSearchTopStories(searchTerm = " ") {
     if (searchTerm) {
       fetch(`${URL}${searchTerm}`)
         .then(response => response.json())
@@ -111,6 +127,7 @@ class App extends Component {
         })
         .catch(e => {
           console.log(`Error fetching data from ${URL}${searchTerm} =>`, e);
+          this.setState({ loading: false, hasError: true });
         });
     }
   }
@@ -120,14 +137,32 @@ class App extends Component {
 // Functional Stateless Components
 // --------------------------------------------------------------
 function Posts(props) {
-  const { list, filter, onDismiss, loading } = props;
+  const { list, filter, onDismiss, loading, noResults, hasError } = props;
 
-  if (loading)
+  if (loading) {
     return (
       <div className="loader">
         <Loader type="Rings" color="#d3d3d3" height={500} width={500} />
       </div>
     );
+  }
+
+  if (hasError) {
+    return (
+      <ErrorMessage>
+        Something went wrong :( Failed to fetch data from Hackernews API. Please
+        check your internet connection.
+      </ErrorMessage>
+    );
+  }
+
+  if (noResults) {
+    return (
+      <ErrorMessage>
+        No results found. Please try again with different keywords.
+      </ErrorMessage>
+    );
+  }
 
   return (
     <div className="table">
@@ -209,6 +244,12 @@ function Button(props) {
       {children}
     </button>
   );
+}
+
+function ErrorMessage(props) {
+  const { children } = props;
+
+  return <div className="error">{children}</div>;
 }
 
 // --------------------------------------------------------------
