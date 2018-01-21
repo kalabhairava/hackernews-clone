@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import Loader from "react-loader-spinner";
 import "./App.css";
 
 // Hackernews API endpoint
@@ -15,7 +16,8 @@ class App extends Component {
     this.state = {
       result: null,
       searchTerm: " ",
-      filter: ""
+      filter: "",
+      loading: true
     };
 
     this.onDismiss = this.onDismiss.bind(this);
@@ -27,7 +29,7 @@ class App extends Component {
   }
 
   render() {
-    const { result, searchTerm, onSearchSubmit, filter } = this.state;
+    const { result, searchTerm, onSearchSubmit, filter, loading } = this.state;
 
     return (
       <div>
@@ -52,13 +54,12 @@ class App extends Component {
             placeholder="Filter Results"
           />
         </div>
-        {result && (
-          <Posts
-            list={result.hits}
-            filter={filter}
-            onDismiss={this.onDismiss}
-          />
-        )}
+        <Posts
+          list={result ? result.hits : []}
+          filter={filter}
+          onDismiss={this.onDismiss}
+          loading={loading}
+        />
       </div>
     );
   }
@@ -82,6 +83,7 @@ class App extends Component {
   }
 
   onSearchSubmit(event) {
+    this.setState({ loading: true });
     this.fetchSearchTopStories(this.state.searchTerm);
     event.preventDefault();
     return false;
@@ -96,7 +98,7 @@ class App extends Component {
   }
 
   setSearchTopStories(result) {
-    this.setState({ result });
+    this.setState({ result, loading: false });
   }
 
   fetchSearchTopStories(searchTerm) {
@@ -117,18 +119,15 @@ class App extends Component {
 // --------------------------------------------------------------
 // Functional Stateless Components
 // --------------------------------------------------------------
-function Search(props) {
-  const { children, value, onSearchTerm } = props;
-  return (
-    <form>
-      <label htmlFor="search">{children}</label>
-      <input name="search" type="text" value={value} onChange={onSearchTerm} />
-    </form>
-  );
-}
-
 function Posts(props) {
-  const { list, filter, onDismiss } = props;
+  const { list, filter, onDismiss, loading } = props;
+
+  if (loading)
+    return (
+      <div className="loader">
+        <Loader type="Rings" color="#d3d3d3" height={500} width={500} />
+      </div>
+    );
 
   return (
     <div className="table">

@@ -77,3 +77,7 @@ a.sub-link:hover {
   grid-column: 2;
   width: 90%;
 }
+
+.loader {
+  text-align: center;
+}
