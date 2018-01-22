@@ -118,18 +118,16 @@ class App extends Component {
   }
 
   fetchSearchTopStories(searchTerm = " ") {
-    if (searchTerm) {
-      fetch(`${URL}${searchTerm}`)
-        .then(response => response.json())
-        .then(result => {
-          console.log("fetch successful, about to render data to the screen");
-          this.setSearchTopStories(result);
-        })
-        .catch(e => {
-          console.log(`Error fetching data from ${URL}${searchTerm} =>`, e);
-          this.setState({ loading: false, hasError: true });
-        });
-    }
+    fetch(`${URL}${searchTerm}`)
+    .then(response => response.json())
+    .then(result => {
+      console.log("fetch successful, about to render data to the screen");
+      this.setSearchTopStories(result);
+    })
+    .catch(e => {
+      console.log(`Error fetching data from ${URL}${searchTerm} =>`, e);
+      this.setState({ loading: false, hasError: true });
+    });
   }
 }
 
