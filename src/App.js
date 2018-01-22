@@ -3,7 +3,7 @@ import Loader from "react-loader-spinner";
 import "./App.css";
 
 // Hackernews API endpoint
-const URL = "https:/hn.algolia.com/api/v1/search?query=";
+const URL = "https://hn.algolia.com/api/v1/search?query=";
 
 // --------------------------------------------------------------
 // Stateful Components
@@ -119,15 +119,15 @@ class App extends Component {
 
   fetchSearchTopStories(searchTerm = " ") {
     fetch(`${URL}${searchTerm}`)
-    .then(response => response.json())
-    .then(result => {
-      console.log("fetch successful, about to render data to the screen");
-      this.setSearchTopStories(result);
-    })
-    .catch(e => {
-      console.log(`Error fetching data from ${URL}${searchTerm} =>`, e);
-      this.setState({ loading: false, hasError: true });
-    });
+      .then(response => response.json())
+      .then(result => {
+        console.log("fetch successful, about to render data to the screen");
+        this.setSearchTopStories(result);
+      })
+      .catch(e => {
+        console.log(`Error fetching data from ${URL}${searchTerm} =>`, e);
+        this.setState({ loading: false, hasError: true });
+      });
   }
 }
 
