@@ -88,3 +88,18 @@ a.sub-link:hover {
   margin: 12em;
   text-align: center;
 }
+
+.page-container {
+  display: inline;
+}
+
+.page-link {
+  display: inline;
+  list-style: none;
+  border: 1px solid black;
+}
+
+.page-break {
+  display: inline;
+  list-style: none;
+}

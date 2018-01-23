@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import Loader from "react-loader-spinner";
+import Paginate from "react-paginate";
 import "./App.css";
 
 // Hackernews API endpoint
@@ -18,7 +19,8 @@ class App extends Component {
       filterTerm: undefined,
       loading: true,
       noResults: false,
-      hasError: false
+      hasError: false,
+      pageNum: 0
     };
 
     this.onDismiss = this.onDismiss.bind(this);
@@ -63,6 +65,24 @@ class App extends Component {
           loading={loading}
           noResults={noResults}
           hasError={hasError}
+        />
+
+        <Paginate
+          pageCount={50}
+          pageRangeDisplayed={5}
+          marginPagesDisplayed={2}
+          previousLabel="<<"
+          nextLabel=">>"
+          breakLabel="..."
+          breakClassName=""
+          onPageChange={() => console.log("page change")}
+          initialPage={0}
+          disableInitialCallback="true"
+          containerClassName="page-container"
+          pageClassName="page-link"
+          breakClassName="page-break"
+          activeClassName=""
+          disabledClassName=""
         />
       </div>
     );
@@ -110,7 +130,7 @@ class App extends Component {
   }
 
   fetchSearchTopStories(searchTerm = " ") {
-    fetch(`${URL}${searchTerm}`)
+    fetch(`${URL}${searchTerm}&page=${this.state.pageNum}`)
       .then(response => response.json())
       .then(result => {
         console.log("fetch successful, about to render data to the screen");
