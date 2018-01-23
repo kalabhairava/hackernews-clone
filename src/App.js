@@ -45,9 +45,8 @@ class App extends Component {
         <div className="header">
           <span className="page-title"> Hacker News </span>
           <form onSubmit={event => this.onSearchSubmit(event)}>
-            <input
+            <TextInput
               name="search"
-              type="text"
               value={searchTerm}
               onChange={this.onSearchTermChange}
               placeholder="Search"
@@ -57,9 +56,8 @@ class App extends Component {
         {!hasError &&
           !noResults && (
             <div className="filter-box">
-              <input
-                name="search"
-                type="text"
+              <TextInput
+                name="filter"
                 value={filter}
                 onChange={this.onFilterTermChange}
                 placeholder="Filter Results"
@@ -78,6 +76,7 @@ class App extends Component {
     );
   }
 
+  // load initial view
   componentDidMount() {
     this.fetchSearchTopStories(this.state.searchTerm);
   }
@@ -134,6 +133,19 @@ class App extends Component {
 // --------------------------------------------------------------
 // Functional Stateless Components
 // --------------------------------------------------------------
+function TextInput(props) {
+  const { name, value, onChange, placeholder } = props;
+  return (
+    <input
+      name={name}
+      type="text"
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+    />
+  );
+}
+
 function Posts(props) {
   const { list, filter, onDismiss, loading, noResults, hasError } = props;
 
