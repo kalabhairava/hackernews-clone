@@ -86,7 +86,7 @@ class App extends Component {
   }
 
   onSearchSubmit(event) {
-    this.setState({ loading: true });
+    this.setState({ loading: true, filterTerm: "" });
     this.fetchSearchTopStories(this.state.searchTerm);
     event.preventDefault();
     return false;
