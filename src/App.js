@@ -9,14 +9,13 @@ const URL = "https://hn.algolia.com/api/v1/search?query=";
 // Stateful Components
 // --------------------------------------------------------------
 class App extends Component {
-  // lifecycle hooks
   constructor(props) {
     super(props);
 
     this.state = {
       result: null,
       searchTerm: undefined,
-      filter: undefined,
+      filterTerm: undefined,
       loading: true,
       noResults: false,
       hasError: false
@@ -24,17 +23,17 @@ class App extends Component {
 
     this.onDismiss = this.onDismiss.bind(this);
     this.onSearchTermChange = this.onSearchTermChange.bind(this);
+    this.onSearchSubmit = this.onSearchSubmit.bind(this);
     this.onFilterTermChange = this.onFilterTermChange.bind(this);
     this.setSearchTopStories = this.setSearchTopStories.bind(this);
     this.fetchSearchTopStories = this.fetchSearchTopStories.bind(this);
-    this.onSearchSubmit = this.onSearchSubmit.bind(this);
   }
 
   render() {
     const {
       result,
       searchTerm,
-      filter,
+      filterTerm,
       loading,
       noResults,
       hasError
@@ -42,33 +41,24 @@ class App extends Component {
 
     return (
       <div>
-        <div className="header">
-          <span className="page-title"> Hacker News </span>
-          <form onSubmit={event => this.onSearchSubmit(event)}>
-            <input
-              name="search"
-              type="text"
-              value={searchTerm}
-              onChange={this.onSearchTermChange}
-              placeholder="Search"
-            />
-          </form>
-        </div>
+        <SearchHeader
+          title="Hacker News"
+          onSearchSubmit={this.onSearchSubmit}
+          searchTerm={searchTerm}
+          onSearchTermChange={this.onSearchTermChange}
+        />
+
         {!hasError &&
           !noResults && (
-            <div className="filter-box">
-              <input
-                name="search"
-                type="text"
-                value={filter}
-                onChange={this.onFilterTermChange}
-                placeholder="Filter Results"
-              />
-            </div>
+            <Filter
+              filterTerm={filterTerm}
+              onFilterTermChange={this.onFilterTermChange}
+            />
           )}
+
         <Posts
           list={result ? result.hits : []}
-          filter={filter}
+          filterTerm={filterTerm}
           onDismiss={this.onDismiss}
           loading={loading}
           noResults={noResults}
@@ -82,7 +72,9 @@ class App extends Component {
     this.fetchSearchTopStories(this.state.searchTerm);
   }
 
-  // class methods
+  // --------------------------------------------------------------
+  // Class Methods
+  // --------------------------------------------------------------
   onDismiss(id, event) {
     const updatedList = this.state.result.hits.filter(
       item => item.objectID !== id
@@ -105,7 +97,7 @@ class App extends Component {
   }
 
   onFilterTermChange(event) {
-    this.setState({ filter: event.target.value });
+    this.setState({ filterTerm: event.target.value });
   }
 
   setSearchTopStories(result) {
@@ -134,8 +126,56 @@ class App extends Component {
 // --------------------------------------------------------------
 // Functional Stateless Components
 // --------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------
+// Search Header Component:
+//    takes search keywords from user, calls HN Search API, and updates the view
+// --------------------------------------------------------------------------------------------
+function SearchHeader(props) {
+  const { title, onSearchSubmit, searchTerm, onSearchTermChange } = props;
+
+  return (
+    <div className="header">
+      <span className="page-title"> {title} </span>
+      <form onSubmit={onSearchSubmit}>
+        <input
+          name="search"
+          type="text"
+          value={searchTerm}
+          onChange={onSearchTermChange}
+          placeholder="Search"
+        />
+      </form>
+    </div>
+  );
+}
+
+// --------------------------------------------------------------------------------------------
+// Filter Component:
+//    filters the results using the filter key entered by the user
+// --------------------------------------------------------------------------------------------
+function Filter(props) {
+  const { filterTerm, onFilterTermChange } = props;
+
+  return (
+    <div className="filter-box">
+      <input
+        name="filter"
+        type="text"
+        value={filterTerm}
+        onChange={onFilterTermChange}
+        placeholder="Filter Results"
+      />
+    </div>
+  );
+}
+
+// --------------------------------------------------------------------------------------------
+// Posts Component:
+//    renders a list of `Post` components (if exists) or an appropriate error screen
+// --------------------------------------------------------------------------------------------
 function Posts(props) {
-  const { list, filter, onDismiss, loading, noResults, hasError } = props;
+  const { list, filterTerm, onDismiss, loading, noResults, hasError } = props;
 
   if (loading) {
     return (
@@ -164,7 +204,7 @@ function Posts(props) {
 
   return (
     <div className="table">
-      {list.filter(filterSearchResults(filter)).map(item => {
+      {list.filter(filterSearchResults(filterTerm)).map(item => {
         return (
           <div key={item.objectID} className="table-row">
             <Post item={item} onDismiss={onDismiss} />
@@ -175,6 +215,10 @@ function Posts(props) {
   );
 }
 
+// --------------------------------------------------------------------------------------------
+// Post Component:
+//    renders a Hacker News post
+// --------------------------------------------------------------------------------------------
 function Post(props) {
   const { item, onDismiss } = props;
 
@@ -235,6 +279,10 @@ function Post(props) {
   );
 }
 
+// --------------------------------------------------------------------------------------------
+// Button Component:
+//    A generic button
+// --------------------------------------------------------------------------------------------
 function Button(props) {
   const { children, onClick, style, classList } = props;
   return (
@@ -244,6 +292,10 @@ function Button(props) {
   );
 }
 
+// --------------------------------------------------------------------------------------------
+// Error Component:
+//    Generic error component
+// --------------------------------------------------------------------------------------------
 function ErrorMessage(props) {
   const { children } = props;
 
@@ -253,10 +305,10 @@ function ErrorMessage(props) {
 // --------------------------------------------------------------
 // Private Functions
 // --------------------------------------------------------------
-function filterSearchResults(filter) {
-  if (filter) {
+function filterSearchResults(filterTerm) {
+  if (filterTerm) {
     return item =>
-      item.title && item.title.toLowerCase().includes(filter.toLowerCase());
+      item.title && item.title.toLowerCase().includes(filterTerm.toLowerCase());
   } else {
     return item => !!item.title;
   }
