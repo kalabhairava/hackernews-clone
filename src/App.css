@@ -3,8 +3,8 @@
   grid-template-columns: 20% 5% 65%;
   grid-column-gap: 10px;
   background: #000000;
-  color: gray;
-  height: 70px;
+  color: white;
+  height: 74px;
   margin: 0;
   padding: 5px;
 }
@@ -18,6 +18,7 @@
 .header input {
   width: 90%;
   height: 24px;
+  border: 3px solid darkgray;
 }
 
 .page-title {
@@ -36,7 +37,7 @@
 }
 
 .table-row {
-  padding: 10px;
+  padding: 15px;
   border: none;
   position: relative;
 }
@@ -46,7 +47,7 @@ a.sub-link {
   cursor: pointer;
   margin: 0 5px;
   text-decoration: none;
-  opacity: 0.75;
+  opacity: 0.8;
 }
 
 a.sub-link:hover {
@@ -75,7 +76,8 @@ a.sub-link:hover {
 
 .filter-box > input {
   grid-column: 2;
-  width: 90%;
+  width: 93%;
+  border: 1px solid black;
 }
 
 .loader {
