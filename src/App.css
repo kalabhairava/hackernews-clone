@@ -43,15 +43,16 @@
 }
 
 a.sub-link {
+  color: #808080;
   font-size: smaller;
   cursor: pointer;
   margin: 0 5px;
   text-decoration: none;
-  opacity: 0.8;
 }
 
 a.sub-link:hover {
   text-decoration: underline;
+  color: #383838;
 }
 
 .dismiss-btn {
