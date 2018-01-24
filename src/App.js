@@ -264,14 +264,14 @@ function Post(props) {
           >
             {item.points} points
           </a>
-        </span>|
+        </span>
         <span>
           <a
             title="Visit the original site"
             href={item.url}
-            className="sub-link"
+            className="sub-link original-link"
           >
-            ({item.url})
+            | ({item.url})
           </a>
         </span>
       </div>
