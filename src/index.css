@@ -7,12 +7,13 @@ body {
 }
 
 a {
-  color: #383838;
+  color: rgb(40, 44, 52);
 }
 
 a:hover {
   text-decoration: underline;
   color: #0065ff;
+  font-weight: bold;
 }
 
 input {
